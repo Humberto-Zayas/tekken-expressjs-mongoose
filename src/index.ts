@@ -1,6 +1,7 @@
 import "./lib/db";
 import express from "express";
 import countryRoutes from "./routes/country";
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3333;
