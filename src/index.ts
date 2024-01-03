@@ -1,6 +1,7 @@
 import "./lib/db";
 import express from "express";
 import countryRoutes from "./routes/country";
+import userRoutes from "./routes/user"; // Import the user routes
 require('dotenv').config();
 
 const app = express();
@@ -15,6 +16,9 @@ app.get("/", async (req, res) => {
 });
 
 app.use("/countries", countryRoutes);
+
+// Use the user routes under the base path "/users"
+app.use("/users", userRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
