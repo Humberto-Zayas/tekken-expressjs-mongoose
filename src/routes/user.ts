@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { UserModel, IUser } from "../models/user";
-import bcrypt from "bcrypt";
 
 const userRoutes = Router();
 
@@ -33,12 +32,10 @@ userRoutes.post("/signup", async (req, res) => {
       return res.status(409).json({ error: "User with this email already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await UserModel.create({
       username,
       email,
-      password: hashedPassword,
+      password,
     });
 
     return res.status(201).json(newUser);
@@ -52,14 +49,22 @@ userRoutes.post("/signup", async (req, res) => {
 userRoutes.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Received credentials:', { email, password });
 
     const user: IUser | null = await UserModel.findOne({ email }).exec();
+    console.log('User found:', user);
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    // Logging intermediate values
+    console.log('Raw Password:', password);
+    console.log('Stored Password (DB):', user.password);
+
+    // Check for whitespace and compare using isCorrectPassword method
+    const passwordMatch = await user.isCorrectPassword(password.trim());
+    console.log('Password match:', passwordMatch);
 
     if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid email or password" });

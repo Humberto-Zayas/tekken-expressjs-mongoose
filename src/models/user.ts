@@ -1,11 +1,11 @@
 import { model, Schema, Document } from "mongoose";
-import bcrypt from "bcrypt";
 
 interface IUser extends Document {
   username: string;
   email: string;
   password: string;
   createdAt: Date;
+  isCorrectPassword: (password: string) => Promise<boolean>;
 }
 
 const UserSchema = new Schema({
@@ -29,20 +29,10 @@ const UserSchema = new Schema({
   },
 });
 
-// Hash the password before saving
-UserSchema.pre<IUser>("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(this.password, 10);
-    this.password = hashedPassword;
-    next();
-  } catch (error: any) {
-    return next(error);
-  }
-});
+// Compare the incoming password with the stored password
+UserSchema.methods.isCorrectPassword = async function (password: string) {
+  return password === this.password;
+};
 
 const UserModel = model<IUser>("User", UserSchema);
 
