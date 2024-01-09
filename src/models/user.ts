@@ -1,4 +1,5 @@
 import { model, Schema, Document } from "mongoose";
+import bcrypt from 'bcrypt';
 
 interface IUser extends Document {
   username: string;
@@ -29,9 +30,19 @@ const UserSchema = new Schema({
   },
 });
 
+// set up pre-save middleware to create password and update lastActive
+UserSchema.pre('save', async function (next) {
+  if (this.isNew || this.isModified('password')) {
+    const saltRounds = 10;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+  }
+  next();
+});
+
+
 // Compare the incoming password with the stored password
 UserSchema.methods.isCorrectPassword = async function (password: string) {
-  return password === this.password;
+  return bcrypt.compare(password, this.password);
 };
 
 const UserModel = model<IUser>("User", UserSchema);
