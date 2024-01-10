@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { UserModel, IUser } from "../models/user";
+import { signToken } from "../utils/auth";
 
 const userRoutes = Router();
 
@@ -38,7 +39,11 @@ userRoutes.post("/signup", async (req, res) => {
       password,
     });
 
-    return res.status(201).json(newUser);
+    // Sign a token for the newly created user
+    const token = signToken({ username, email, _id: newUser._id });
+
+    return res.status(201).json({ user: newUser, token });
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Sorry, something went wrong :/" });
@@ -70,7 +75,10 @@ userRoutes.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    return res.json({ message: "Login successful" });
+    // Sign a token on successful login
+    const token = signToken({ username: user.username, email: user.email, _id: user._id });
+
+    return res.json({ message: "Login successful", token });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Sorry, something went wrong :/" });
