@@ -54,22 +54,15 @@ userRoutes.post("/signup", async (req, res) => {
 userRoutes.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Received credentials:', { email, password });
 
     const user: IUser | null = await UserModel.findOne({ email }).exec();
-    console.log('User found:', user);
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Logging intermediate values
-    console.log('Raw Password:', password);
-    console.log('Stored Password (DB):', user.password);
-
     // Check for whitespace and compare using isCorrectPassword method
     const passwordMatch = await user.isCorrectPassword(password.trim());
-    console.log('Password match:', passwordMatch);
 
     if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -78,7 +71,7 @@ userRoutes.post("/login", async (req, res) => {
     // Sign a token on successful login
     const token = signToken({ username: user.username, email: user.email, _id: user._id });
 
-    return res.json({ message: "Login successful", token });
+    return res.json({ message: "Login successful", token, username: user.username });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Sorry, something went wrong :/" });
