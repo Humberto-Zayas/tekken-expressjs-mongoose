@@ -69,9 +69,13 @@ userRoutes.post("/login", async (req, res) => {
     }
 
     // Sign a token on successful login
-    const token = signToken({ username: user.username, email: user.email, _id: user._id });
+    const token = signToken({
+      username: user.username,
+      email: user.email,
+      _id: user._id,
+    });
 
-    return res.json({ message: "Login successful", token, username: user.username });
+    return res.json({ token, username: user.username, userId: user._id });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Sorry, something went wrong :/" });
