@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { CardModel, ICard } from '../models/card';
-import verifyToken from '../middlewares/authMiddleware';
 
 const cardRoutes = Router();
 
@@ -19,7 +18,7 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
 });
 
 // Route to get cards by user ID
-cardRoutes.get('/user/:userId', verifyToken, async (req: any, res: Response) => {
+cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
 
@@ -33,18 +32,18 @@ cardRoutes.get('/user/:userId', verifyToken, async (req: any, res: Response) => 
 });
 
 // Route to create a new card
-cardRoutes.post('/create', verifyToken, async (req: any, res: Response) => {
+cardRoutes.post('/create', async (req: Request, res: Response) => {
   try {
-    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData } = req.body;
+    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
 
-    // Extract userId from the decoded token
-    const userId = req.user._id;
+    // Extract userId from the decoded token if needed
+    // const userId = req.user._id;
 
     const newCard = await CardModel.create({
       cardName,
       cardDescription,
       youtubeLink,
-      userId,
+      userId, 
       punisherData,
       moveFlowChartData,
     });
@@ -57,10 +56,10 @@ cardRoutes.post('/create', verifyToken, async (req: any, res: Response) => {
 });
 
 // Route to edit an existing card
-cardRoutes.put('/edit/:cardId', verifyToken, async (req: any, res: Response) => {
+cardRoutes.put('/edit/:cardId', async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
-    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData } = req.body;
+    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
 
     const updatedCard = await CardModel.findByIdAndUpdate(
       cardId,
@@ -70,6 +69,7 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: any, res: Response) => 
         youtubeLink,
         punisherData,
         moveFlowChartData,
+        userId
       },
       { new: true }
     );
