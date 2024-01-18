@@ -1,10 +1,15 @@
 import "./lib/db";
 import express from "express";
 import countryRoutes from "./routes/country";
-import userRoutes from "./routes/user"; // Import the user routes
+import userRoutes from "./routes/user";
+import cardRoutes from "./routes/cards";
+import cors from 'cors';
+
 require('dotenv').config();
 
 const app = express();
+app.use(cors());
+
 const port = process.env.PORT || 3333;
 
 app.use(express.json());
@@ -16,9 +21,15 @@ app.get("/", async (req, res) => {
 });
 
 app.use("/countries", countryRoutes);
-
-// Use the user routes under the base path "/users"
 app.use("/users", userRoutes);
+app.use("/cards", cardRoutes); // Use the card routes under the base path "/cards"
+
+// Middleware for handling errors
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);

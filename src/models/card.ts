@@ -1,6 +1,7 @@
 import { model, Schema, Document } from "mongoose";
 
 interface ICard extends Document {
+  characterName: string;
   cardName: string;
   cardDescription: string;
   youtubeLink?: string;
@@ -30,6 +31,10 @@ interface ICard extends Document {
 }
 
 const CardSchema = new Schema<ICard>({
+  characterName: {
+    type: String,
+    required: true,
+  },
   cardName: {
     type: String,
     required: true,
@@ -53,7 +58,6 @@ const CardSchema = new Schema<ICard>({
       },
       description: {
         type: String,
-        required: true,
       },
       hitLevel: {
         type: String,
@@ -86,7 +90,6 @@ const CardSchema = new Schema<ICard>({
       },
       description: {
         type: String,
-        required: true,
       },
       hitLevel: {
         type: String,

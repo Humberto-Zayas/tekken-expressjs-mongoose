@@ -3,6 +3,16 @@ import { CardModel, ICard } from '../models/card';
 
 const cardRoutes = Router();
 
+cardRoutes.get('/all', async (_req: Request, res: Response) => {
+  try {
+    const cards: ICard[] = await CardModel.find().exec();
+    return res.json(cards);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Sorry, something went wrong :/' });
+  }
+});
+
 // Route to get cards by character name
 cardRoutes.get('/character/:characterName', async (req: Request, res: Response) => {
   try {
@@ -34,13 +44,14 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 // Route to create a new card
 cardRoutes.post('/create', async (req: Request, res: Response) => {
   try {
-    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
+    const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
 
     // Extract userId from the decoded token if needed
     // const userId = req.user._id;
 
     const newCard = await CardModel.create({
       cardName,
+      characterName,
       cardDescription,
       youtubeLink,
       userId, 
@@ -48,9 +59,10 @@ cardRoutes.post('/create', async (req: Request, res: Response) => {
       moveFlowChartData,
     });
 
+
     return res.status(201).json(newCard);
   } catch (error) {
-    console.error(error);
+    console.error('Error creating new card:', error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
