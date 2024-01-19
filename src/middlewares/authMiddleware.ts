@@ -1,12 +1,13 @@
+// authMiddleware.ts
+
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/user'; // Replace with the actual path
+import { IUser } from '../models/user'; 
 
 const secret = process.env.JWT_SECRET || 'your_default_secret';
 
-// Extend the Request interface to include the user property
 interface AuthRequest extends Request {
-  user?: IUser; // Replace 'any' with your actual user type
+  user?: IUser; 
 }
 
 const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -26,8 +27,10 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const decoded: any = jwt.verify(token, secret);
     req.user = decoded; // Attach the decoded user information to the request
+
     next();
   } catch (error) {
+    console.error('Token verification error:', error);
     return res.status(401).json({ error: 'Unauthorized - Invalid token' });
   }
 };

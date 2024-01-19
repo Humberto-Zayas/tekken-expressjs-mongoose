@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { CardModel, ICard } from '../models/card';
+import verifyToken from '../middlewares/authMiddleware'; // Adjust the path as per your project structure
+
 
 const cardRoutes = Router();
 
@@ -42,12 +44,9 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 });
 
 // Route to create a new card
-cardRoutes.post('/create', async (req: Request, res: Response) => {
+cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {
     const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
-
-    // Extract userId from the decoded token if needed
-    // const userId = req.user._id;
 
     const newCard = await CardModel.create({
       cardName,
@@ -59,7 +58,6 @@ cardRoutes.post('/create', async (req: Request, res: Response) => {
       moveFlowChartData,
     });
 
-
     return res.status(201).json(newCard);
   } catch (error) {
     console.error('Error creating new card:', error);
@@ -68,7 +66,7 @@ cardRoutes.post('/create', async (req: Request, res: Response) => {
 });
 
 // Route to edit an existing card
-cardRoutes.put('/edit/:cardId', async (req: Request, res: Response) => {
+cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
     const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;

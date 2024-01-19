@@ -3,12 +3,10 @@ import express from "express";
 import countryRoutes from "./routes/country";
 import userRoutes from "./routes/user";
 import cardRoutes from "./routes/cards";
-import cors from 'cors';
 
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
 
 const port = process.env.PORT || 3333;
 
