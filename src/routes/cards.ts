@@ -20,9 +20,27 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
   try {
     const characterName = req.params.characterName;
 
-    const cards: ICard[] = await CardModel.find({ cardName: characterName }).exec();
+    const cards: ICard[] = await CardModel.find({ characterName: { $regex: new RegExp(characterName, 'i') } }).exec();
 
     return res.json(cards);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Sorry, something went wrong :/' });
+  }
+});
+
+// Route to get a card by ID
+cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
+  try {
+    const cardId = req.params.cardId;
+
+    const card: ICard | null = await CardModel.findById(cardId).exec();
+
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    return res.json(card);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
