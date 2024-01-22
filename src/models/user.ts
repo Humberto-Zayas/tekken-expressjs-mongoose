@@ -7,6 +7,8 @@ interface IUser extends Document {
   password: string;
   createdAt: Date;
   isCorrectPassword: (password: string) => Promise<boolean>;
+  bookmarks: Schema.Types.ObjectId[]; // Array of Card IDs
+
 }
 
 const UserSchema = new Schema({
@@ -28,6 +30,12 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  bookmarks: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Card',
+    },
+  ],
 });
 
 // set up pre-save middleware to create password and update lastActive

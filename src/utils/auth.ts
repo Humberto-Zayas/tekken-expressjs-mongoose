@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
 import { IUser } from "../models/user";
+import mongoose from 'mongoose';
 
 interface TokenData {
   username: string;
   email: string;
   _id: string;
-  // Add other fields if necessary
+  bookmarkedCardIds: string[] | null;
 }
 
 const secret = process.env.JWT_SECRET || "your_default_secret"; // replace with your actual secret
