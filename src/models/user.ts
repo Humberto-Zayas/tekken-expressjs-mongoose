@@ -1,4 +1,4 @@
-import { model, Schema, Document } from "mongoose";
+import { model, Schema, Document, Types } from "mongoose";
 import bcrypt from 'bcrypt';
 
 interface IUser extends Document {
@@ -30,12 +30,7 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  bookmarks: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Card',
-    },
-  ],
+  bookmarks: [{ type: Schema.Types.ObjectId, ref: 'Card' }]
 });
 
 // set up pre-save middleware to create password and update lastActive

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { UserModel, IUser } from "../models/user";
 import { signToken } from "../utils/auth";
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose'; // Import mongoose and Types
 
 const userRoutes = Router();
 
@@ -101,16 +101,16 @@ userRoutes.post('/:userId/bookmark/:cardId', async (req, res) => {
     }
 
     // Convert cardId to a valid ObjectId
-    const validCardId = new mongoose.Types.ObjectId(cardId);
+    const validCardId = mongoose.Types.ObjectId.createFromHexString(cardId);
 
     // Check if the card is already bookmarked
     if (user.bookmarks.map(b => b.toString()).includes(validCardId.toString())) {
       return res.status(400).json({ error: 'Card already bookmarked' });
     }
 
-    // Add the card to the user's bookmarks
-    user.bookmarks.push(new mongoose.Schema.Types.ObjectId(cardId));
-    await user.save();    
+    // Convert validCardId to a string before pushing it to the array
+    user.bookmarks.push(validCardId as unknown as mongoose.Schema.Types.ObjectId);
+    await user.save();
 
     return res.json({ success: true });
   } catch (error) {
@@ -118,6 +118,9 @@ userRoutes.post('/:userId/bookmark/:cardId', async (req, res) => {
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
+
+
 
 // Route to get a user's bookmarks
 userRoutes.get('/:userId/bookmarks', async (req, res) => {
