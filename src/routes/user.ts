@@ -119,6 +119,38 @@ userRoutes.post('/:userId/bookmark/:cardId', async (req, res) => {
   }
 });
 
+// Route to unbookmark a card
+userRoutes.delete('/:userId/unbookmark/:cardId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const cardId = req.params.cardId;
+
+    const user: IUser | null = await UserModel.findById(userId).exec();
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Convert cardId to a valid ObjectId
+    const validCardId = mongoose.Types.ObjectId.createFromHexString(cardId);
+
+    // Check if the card is bookmarked
+    const bookmarkIndex = user.bookmarks.findIndex(b => b.toString() === validCardId.toString());
+
+    if (bookmarkIndex === -1) {
+      return res.status(400).json({ error: 'Card not bookmarked' });
+    }
+
+    // Remove the card from the bookmarks array
+    user.bookmarks.splice(bookmarkIndex, 1);
+    await user.save();
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Sorry, something went wrong :/' });
+  }
+});
 
 
 
