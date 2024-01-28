@@ -28,6 +28,10 @@ interface ICard extends Document {
     counterHitFrame?: string;
     notes?: string;
   }>;
+  ratings: Array<{
+    userId: string;
+    rating: number;
+  }>;
 }
 
 const CardSchema = new Schema<ICard>({
@@ -114,7 +118,27 @@ const CardSchema = new Schema<ICard>({
       },
     },
   ],
+  ratings: [
+    {
+      userId: {
+        type: String,
+        required: true,
+      },
+      rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5,
+      },
+    },
+  ],
 });
+
+CardSchema.methods.calculateAverageRating = function (this: any) {
+  const totalRating = this.ratings.reduce((sum: number, rating: { rating: number }) => sum + rating.rating, 0);
+  const averageRating = totalRating / this.ratings.length;
+  return isNaN(averageRating) ? 0 : averageRating;
+};
 
 const CardModel = model<ICard>("Card", CardSchema);
 
