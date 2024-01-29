@@ -6,6 +6,7 @@ interface ICard extends Document {
   cardDescription: string;
   youtubeLink?: string;
   userId: string;
+  username: string;
   punisherData: Array<{
     move: string;
     description: string;
@@ -32,6 +33,8 @@ interface ICard extends Document {
     userId: string;
     rating: number;
   }>;
+  createdAt: Date;
+  lastEditedAt: Date | null;
 }
 
 const CardSchema = new Schema<ICard>({
@@ -51,6 +54,10 @@ const CardSchema = new Schema<ICard>({
     type: String,
   },
   userId: {
+    type: String,
+    required: true,
+  },
+  username: {
     type: String,
     required: true,
   },
@@ -130,6 +137,14 @@ const CardSchema = new Schema<ICard>({
       },
     },
   ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  lastEditedAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 CardSchema.methods.calculateAverageRating = function (this: any) {
@@ -137,7 +152,6 @@ CardSchema.methods.calculateAverageRating = function (this: any) {
   const averageRating = this.ratings && this.ratings.length > 0 ? totalRating / this.ratings.length : 0;
   return isNaN(averageRating) ? 0 : averageRating;
 };
-
 
 const CardModel = model<ICard>("Card", CardSchema);
 

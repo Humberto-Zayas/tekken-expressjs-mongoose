@@ -64,7 +64,7 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {
-    const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
+    const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId, username } = req.body;
 
     const newCard = await CardModel.create({
       cardName,
@@ -72,6 +72,7 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
       cardDescription,
       youtubeLink,
       userId, 
+      username,
       punisherData,
       moveFlowChartData,
     });
@@ -115,5 +116,40 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response)
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
+// Route to add or update a rating for a card
+cardRoutes.post('/rate/:cardId', verifyToken, async (req: Request, res: Response) => {
+  try {
+    const cardId = req.params.cardId;
+    const { userId, rating } = req.body;
+
+    // Find the card
+    const card: ICard | null = await CardModel.findById(cardId).exec();
+
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    // Check if the user has already rated the card
+    const existingRating = card.ratings.find((r) => r.userId === userId);
+
+    if (existingRating) {
+      // Update the existing rating
+      existingRating.rating = rating;
+    } else {
+      // Add a new rating
+      card.ratings.push({ userId, rating });
+    }
+
+    // Save the updated card
+    const updatedCard = await card.save();
+
+    return res.json(updatedCard);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Sorry, something went wrong :/' });
+  }
+});
+
 
 export default cardRoutes;
