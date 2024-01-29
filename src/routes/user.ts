@@ -152,8 +152,6 @@ userRoutes.delete('/:userId/unbookmark/:cardId', async (req, res) => {
   }
 });
 
-
-
 // Route to get a user's bookmarks
 userRoutes.get('/:userId/bookmarks', async (req, res) => {
   try {

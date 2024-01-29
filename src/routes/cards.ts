@@ -78,7 +78,10 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
 
     return res.status(201).json(newCard);
   } catch (error) {
+    // Log the error to the console
     console.error('Error creating new card:', error);
+
+    // Send an error response to the client
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });

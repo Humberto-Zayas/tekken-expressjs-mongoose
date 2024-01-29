@@ -122,11 +122,9 @@ const CardSchema = new Schema<ICard>({
     {
       userId: {
         type: String,
-        required: true,
       },
       rating: {
         type: Number,
-        required: true,
         min: 1,
         max: 5,
       },
@@ -135,10 +133,11 @@ const CardSchema = new Schema<ICard>({
 });
 
 CardSchema.methods.calculateAverageRating = function (this: any) {
-  const totalRating = this.ratings.reduce((sum: number, rating: { rating: number }) => sum + rating.rating, 0);
-  const averageRating = totalRating / this.ratings.length;
+  const totalRating = this.ratings ? this.ratings.reduce((sum: number, rating: { rating: number }) => sum + rating.rating, 0) : 0;
+  const averageRating = this.ratings && this.ratings.length > 0 ? totalRating / this.ratings.length : 0;
   return isNaN(averageRating) ? 0 : averageRating;
 };
+
 
 const CardModel = model<ICard>("Card", CardSchema);
 
