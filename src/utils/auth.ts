@@ -10,7 +10,7 @@ interface TokenData {
 }
 
 const secret = process.env.JWT_SECRET || "your_default_secret"; // replace with your actual secret
-const expiration = "1h"; // adjust the expiration time as needed
+const expiration = "24h"; // adjust the expiration time as needed
 
 const signToken = (data: TokenData): string => {
   return jwt.sign({ data }, secret, { expiresIn: expiration });

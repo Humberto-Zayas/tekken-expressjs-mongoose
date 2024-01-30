@@ -20,7 +20,10 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
   try {
     const characterName = req.params.characterName;
 
-    const cards: ICard[] = await CardModel.find({ characterName: { $regex: new RegExp(characterName, 'i') } }).exec();
+    // Fetch cards and sort them by createdAt in ascending order
+    const cards: ICard[] = await CardModel.find({ characterName: { $regex: new RegExp(characterName, 'i') } })
+      .sort({ createdAt: -1 })  // Sorting by createdAt in ascending order
+      .exec();
 
     return res.json(cards);
   } catch (error) {
