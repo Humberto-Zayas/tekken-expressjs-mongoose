@@ -158,7 +158,10 @@ userRoutes.get('/:userId/bookmarks', async (req, res) => {
     const userId = req.params.userId;
 
     const user: IUser | null = await UserModel.findById(userId)
-      .populate('bookmarks') // Populate the bookmarks field with actual Card objects
+      .populate({
+        path: 'bookmarks',
+        options: { sort: { createdAt: -1 } }
+      })
       .exec();
 
     if (!user) {
