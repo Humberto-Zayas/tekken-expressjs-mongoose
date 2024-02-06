@@ -154,5 +154,35 @@ cardRoutes.post('/rate/:cardId', verifyToken, async (req: Request, res: Response
   }
 });
 
+// Route to delete a card
+cardRoutes.delete('/:cardId', verifyToken, async (req: Request, res: Response) => {
+  try {
+    const cardId = req.params.cardId;
+    const { userId } = req.body;
+
+    console.log(req.body)
+
+    // Check if the card exists
+    const cardToDelete = await CardModel.findById(cardId);
+
+    if (!cardToDelete) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    // Check if the user has the right to delete the card (you can modify this based on your authentication logic)
+    if (cardToDelete.userId !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to delete this card' });
+    }
+
+    // Delete the card
+    await CardModel.findByIdAndDelete(cardId);
+
+    return res.status(200).json({ message: 'Card deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting card:', error);
+    return res.status(500).json({ error: 'Sorry, something went wrong :/' });
+  }
+});
+
 
 export default cardRoutes;
