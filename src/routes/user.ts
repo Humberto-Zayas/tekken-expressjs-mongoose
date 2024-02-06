@@ -152,14 +152,23 @@ userRoutes.delete('/:userId/unbookmark/:cardId', async (req, res) => {
   }
 });
 
-// Route to get a user's bookmarks
 userRoutes.get('/:userId/bookmarks', async (req, res) => {
   try {
     const userId = req.params.userId;
+    const characterName = req.query.characterName as string; // Explicitly cast characterName to string
 
-    const user: IUser | null = await UserModel.findById(userId)
+    let query: { userId: string; characterName?: string }; // Define query type
+
+    if (characterName) {
+      query = { userId, characterName }; // If characterName is provided, add it to the query
+    } else {
+      query = { userId }; // Default query to find bookmarks by user ID
+    }
+
+    const user = await UserModel.findById(userId)
       .populate({
         path: 'bookmarks',
+        match: query, // Apply the query to filter bookmarks by character name if provided
         options: { sort: { createdAt: -1 } }
       })
       .exec();
