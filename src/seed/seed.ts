@@ -11,6 +11,10 @@
 //     // Delete all existing cards
 //     await CardModel.deleteMany({});
 
+//     // Usernames to alternate between
+//     const usernames = ['AsukaScrub', 'Hzayas'];
+//     let usernameIndex = 0;
+
 //     // Iterate over each character
 //     for (const characterName of characters) {
 //       // Create cards for the character
@@ -23,7 +27,7 @@
 //           cardName: `Card ${i + 1} for ${characterName}`,
 //           cardDescription: `Description for Card ${i + 1} of ${characterName}`,
 //           userId: 'userId', // Add the user ID of the creator here
-//           username: 'username', // Add the username of the creator here
+//           username: usernames[usernameIndex], // Alternate between usernames
 //           punisherData,
 //           moveFlowChartData,
 //           ratings: [],
@@ -31,6 +35,9 @@
 
 //         // Create the card in the database
 //         await CardModel.create(cardData);
+
+//         // Toggle between usernames
+//         usernameIndex = (usernameIndex + 1) % usernames.length;
 //       }
 //     }
 
