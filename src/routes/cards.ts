@@ -104,7 +104,8 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response)
         youtubeLink,
         punisherData,
         moveFlowChartData,
-        userId
+        userId,
+        lastEditedAt: new Date(), // Update lastEditedAt field with current date/time
       },
       { new: true }
     );
