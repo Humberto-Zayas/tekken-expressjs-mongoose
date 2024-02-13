@@ -11,7 +11,7 @@ interface ICard extends Document {
     move: string;
     description: string;
     hitLevel?: string;
-    damage?: string;
+    damage?: string[];
     startUpFrame?: string;
     blockFrame?: string;
     hitFrame?: string;
@@ -22,7 +22,7 @@ interface ICard extends Document {
     move: string;
     description: string;
     hitLevel?: string;
-    damage?: string;
+    damage?: string[];
     startUpFrame?: string;
     blockFrame?: string;
     hitFrame?: string;
@@ -74,7 +74,7 @@ const CardSchema = new Schema<ICard>({
         type: String,
       },
       damage: {
-        type: String,
+        type: Array,
       },
       startUpFrame: {
         type: String,
@@ -106,7 +106,7 @@ const CardSchema = new Schema<ICard>({
         type: String,
       },
       damage: {
-        type: String,
+        type: Array,
       },
       startUpFrame: {
         type: String,
