@@ -33,9 +33,10 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
 });
 
 // Route to get a card by ID
-cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
+cardRoutes.get('/id/:cardId', verifyToken, async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
+    const userId = req.query.userId as string; // Assuming userId is a string
 
     const card: ICard | null = await CardModel.findById(cardId).exec();
 
@@ -43,7 +44,22 @@ cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Card not found' });
     }
 
-    return res.json(card);
+    // Check if the user has liked or disliked any tags associated with the card
+    const userReactions = card.tags.map((tag: { name: string; reactions: any[] }) => {
+      // Use toggleTagReaction method on the schema level
+      const cardSchema = CardModel.schema as any; // Cast to any to avoid TypeScript errors
+      const tagReaction = cardSchema.methods.toggleTagReaction.call(card, userId, tag.name);
+      return {
+        tag: tag.name,
+        liked: tagReaction === 'like',
+        disliked: tagReaction === 'dislike',
+      };
+    });
+
+    // Include user reactions in the response
+    const cardWithReactions = { ...card.toObject(), userReactions };
+
+    return res.json(cardWithReactions);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
@@ -67,7 +83,7 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {
-    const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId, username } = req.body;
+    const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId, username, tags } = req.body;
 
     const newCard = await CardModel.create({
       cardName,
@@ -78,6 +94,7 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
       username,
       punisherData,
       moveFlowChartData,
+      tags
     });
 
     return res.status(201).json(newCard);
@@ -94,7 +111,7 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
 cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
-    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId } = req.body;
+    const { cardName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId, tags } = req.body;
 
     const updatedCard = await CardModel.findByIdAndUpdate(
       cardId,
@@ -105,6 +122,7 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response)
         punisherData,
         moveFlowChartData,
         userId,
+        tags,
         lastEditedAt: new Date(), // Update lastEditedAt field with current date/time
       },
       { new: true }

@@ -33,124 +33,78 @@ interface ICard extends Document {
     userId: string;
     rating: number;
   }>;
+  tags: Array<{
+    name: string;
+    reactions: Array<{
+      userId: string;
+      type: 'like' | 'dislike';
+    }>;
+  }>; // Modified tags field
   createdAt: Date;
   lastEditedAt: Date | null;
+
+  // Method to toggle like/dislike for a tag by a user
+  toggleTagReaction(userId: string, tagName: string, reactionType: 'like' | 'dislike'): void;
 }
 
 const CardSchema = new Schema<ICard>({
-  characterName: {
-    type: String,
-    required: true,
-  },
-  cardName: {
-    type: String,
-    required: true,
-  },
-  cardDescription: {
-    type: String,
-    required: true,
-  },
-  youtubeLink: {
-    type: String,
-  },
-  userId: {
-    type: String,
-    required: true,
-  },
-  username: {
-    type: String,
-    required: true,
-  },
-  punisherData: [
+  characterName: { type: String, required: true },
+  cardName: { type: String, required: true },
+  cardDescription: { type: String, required: true },
+  youtubeLink: String,
+  userId: { type: String, required: true },
+  username: { type: String, required: true },
+  punisherData: [{ type: Object }],
+  moveFlowChartData: [{ type: Object }],
+  ratings: [{ userId: String, rating: Number }],
+  tags: [
     {
-      move: {
+      name: {
         type: String,
         required: true,
       },
-      description: {
-        type: String,
-      },
-      hitLevel: {
-        type: String,
-      },
-      damage: {
-        type: Array,
-      },
-      startUpFrame: {
-        type: String,
-      },
-      blockFrame: {
-        type: String,
-      },
-      hitFrame: {
-        type: String,
-      },
-      counterHitFrame: {
-        type: String,
-      },
-      notes: {
-        type: String,
-      },
+      reactions: [
+        {
+          userId: {
+            type: String,
+            required: true,
+          },
+          type: {
+            type: String,
+            enum: ['like', 'dislike'],
+          },
+        },
+      ],
     },
   ],
-  moveFlowChartData: [
-    {
-      move: {
-        type: String,
-        required: true,
-      },
-      description: {
-        type: String,
-      },
-      hitLevel: {
-        type: String,
-      },
-      damage: {
-        type: Array,
-      },
-      startUpFrame: {
-        type: String,
-      },
-      blockFrame: {
-        type: String,
-      },
-      hitFrame: {
-        type: String,
-      },
-      counterHitFrame: {
-        type: String,
-      },
-      notes: {
-        type: String,
-      },
-    },
-  ],
-  ratings: [
-    {
-      userId: {
-        type: String,
-      },
-      rating: {
-        type: Number,
-        min: 1,
-        max: 5,
-      },
-    },
-  ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  lastEditedAt: {
-    type: Date,
-    default: null,
-  },
+  createdAt: { type: Date, default: Date.now },
+  lastEditedAt: Date,
 });
 
-CardSchema.methods.calculateAverageRating = function (this: any) {
-  const totalRating = this.ratings ? this.ratings.reduce((sum: number, rating: { rating: number }) => sum + rating.rating, 0) : 0;
-  const averageRating = this.ratings && this.ratings.length > 0 ? totalRating / this.ratings.length : 0;
-  return isNaN(averageRating) ? 0 : averageRating;
+// Method to toggle like/dislike for a tag by a user
+CardSchema.methods.toggleTagReaction = function (
+  this: ICard,
+  userId: string,
+  tagName: string,
+  reactionType: 'like' | 'dislike'
+) {
+  const tagIndex = this.tags.findIndex(tag => tag.name === tagName);
+  if (tagIndex !== -1) {
+    const userReactionIndex = this.tags[tagIndex].reactions.findIndex(
+      reaction => reaction.userId === userId
+    );
+    if (userReactionIndex !== -1) {
+      // If user already reacted, toggle reaction
+      if (this.tags[tagIndex].reactions[userReactionIndex].type === reactionType) {
+        this.tags[tagIndex].reactions.splice(userReactionIndex, 1); // Remove reaction
+      } else {
+        this.tags[tagIndex].reactions[userReactionIndex].type = reactionType; // Toggle reaction
+      }
+    } else {
+      // If user hasn't reacted yet, add new reaction
+      this.tags[tagIndex].reactions.push({ userId, type: reactionType });
+    }
+  }
 };
 
 const CardModel = model<ICard>("Card", CardSchema);
