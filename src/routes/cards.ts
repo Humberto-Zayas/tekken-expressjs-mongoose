@@ -19,7 +19,6 @@ cardRoutes.get('/all', async (_req: Request, res: Response) => {
 cardRoutes.get('/character/:characterName', async (req: Request, res: Response) => {
   try {
     const characterName = req.params.characterName;
-
     // Fetch cards and sort them by createdAt in ascending order
     const cards: ICard[] = await CardModel.find({ characterName: { $regex: new RegExp(characterName, 'i') } })
       .sort({ createdAt: -1 })  // Sorting by createdAt in ascending order
@@ -33,10 +32,11 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
 });
 
 // Route to get a card by ID
-cardRoutes.get('/id/:cardId', verifyToken, async (req: Request, res: Response) => {
+cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
-    const userId = req.query.userId as string; // Assuming userId is a string
+    const userId = req.query.userId as string; 
+    console.log(userId)
 
     const card: ICard | null = await CardModel.findById(cardId).exec();
 

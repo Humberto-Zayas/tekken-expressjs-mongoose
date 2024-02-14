@@ -7,7 +7,7 @@ interface ICard extends Document {
   youtubeLink?: string;
   userId: string;
   username: string;
-  punisherData: Array<{
+  punisherData: {
     move: string;
     description: string;
     hitLevel?: string;
@@ -17,8 +17,8 @@ interface ICard extends Document {
     hitFrame?: string;
     counterHitFrame?: string;
     notes?: string;
-  }>;
-  moveFlowChartData: Array<{
+  }[];
+  moveFlowChartData: {
     move: string;
     description: string;
     hitLevel?: string;
@@ -28,18 +28,18 @@ interface ICard extends Document {
     hitFrame?: string;
     counterHitFrame?: string;
     notes?: string;
-  }>;
-  ratings: Array<{
+  }[];
+  ratings: {
     userId: string;
     rating: number;
-  }>;
-  tags: Array<{
+  }[];
+  tags: {
     name: string;
-    reactions: Array<{
-      userId: string;
+    reactions: {
+      userId: string; // Consider changing to mongoose.Schema.Types.ObjectId if applicable
       type: 'like' | 'dislike';
-    }>;
-  }>; // Modified tags field
+    }[];
+  }[];
   createdAt: Date;
   lastEditedAt: Date | null;
 
@@ -51,11 +51,73 @@ const CardSchema = new Schema<ICard>({
   characterName: { type: String, required: true },
   cardName: { type: String, required: true },
   cardDescription: { type: String, required: true },
-  youtubeLink: String,
+  youtubeLink: {type: String },
   userId: { type: String, required: true },
   username: { type: String, required: true },
-  punisherData: [{ type: Object }],
-  moveFlowChartData: [{ type: Object }],
+  punisherData: [
+    {
+      move: {
+        type: String,
+        required: true,
+      },
+      description: {
+        type: String,
+      },
+      hitLevel: {
+        type: String,
+      },
+      damage: {
+        type: String,
+      },
+      startUpFrame: {
+        type: String,
+      },
+      blockFrame: {
+        type: String,
+      },
+      hitFrame: {
+        type: String,
+      },
+      counterHitFrame: {
+        type: String,
+      },
+      notes: {
+        type: String,
+      },
+    },
+  ],
+  moveFlowChartData: [
+    {
+      move: {
+        type: String,
+        required: true,
+      },
+      description: {
+        type: String,
+      },
+      hitLevel: {
+        type: String,
+      },
+      damage: {
+        type: String,
+      },
+      startUpFrame: {
+        type: String,
+      },
+      blockFrame: {
+        type: String,
+      },
+      hitFrame: {
+        type: String,
+      },
+      counterHitFrame: {
+        type: String,
+      },
+      notes: {
+        type: String,
+      },
+    },
+  ],
   ratings: [{ userId: String, rating: Number }],
   tags: [
     {
