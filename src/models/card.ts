@@ -66,9 +66,7 @@ const CardSchema = new Schema<ICard>({
       hitLevel: {
         type: String,
       },
-      damage: {
-        type: String,
-      },
+      damage: [{ type: String }], // Array of strings
       startUpFrame: {
         type: String,
       },
@@ -98,9 +96,7 @@ const CardSchema = new Schema<ICard>({
       hitLevel: {
         type: String,
       },
-      damage: {
-        type: String,
-      },
+      damage: [{ type: String }], // Array of strings
       startUpFrame: {
         type: String,
       },
