@@ -15,12 +15,25 @@ cardRoutes.get('/all', async (_req: Request, res: Response) => {
   }
 });
 
-// Route to get cards by character name
+// Route to get cards by character name and tags
 cardRoutes.get('/character/:characterName', async (req: Request, res: Response) => {
   try {
     const characterName = req.params.characterName;
+    const tags = req.query.tags as string | undefined; // Explicitly specify the type as string | undefined
+
+    // Construct the query object
+    const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
+
+    // If tags query parameter exists and is a string, filter cards by tags
+    if (typeof tags === 'string') {
+      const tagsArray = tags.split(','); // Split the tags string into an array
+      query['tags.name'] = { $in: tagsArray }; // Filter cards where any tag name is in the provided tags array
+    }
+
+    console.log('query:', query); // Log the constructed query for debugging
+
     // Fetch cards and sort them by createdAt in ascending order
-    const cards: ICard[] = await CardModel.find({ characterName: { $regex: new RegExp(characterName, 'i') } })
+    const cards: ICard[] = await CardModel.find(query)
       .sort({ createdAt: -1 })  // Sorting by createdAt in ascending order
       .exec();
 
