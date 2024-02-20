@@ -15,11 +15,12 @@ cardRoutes.get('/all', async (_req: Request, res: Response) => {
   }
 });
 
-// Route to get cards by character name and tags
 cardRoutes.get('/character/:characterName', async (req: Request, res: Response) => {
   try {
     const characterName = req.params.characterName;
     const tags = req.query.tags as string | undefined; // Explicitly specify the type as string | undefined
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = 2; // Number of items per page
 
     // Construct the query object
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
@@ -32,10 +33,18 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
 
     console.log('query:', query); // Log the constructed query for debugging
 
-    // Fetch cards and sort them by createdAt in ascending order
+    // Fetch total number of cards
+    const totalCount = await CardModel.countDocuments(query).exec();
+
+    // Fetch cards, apply pagination, and sort them by createdAt in ascending order
     const cards: ICard[] = await CardModel.find(query)
       .sort({ createdAt: -1 })  // Sorting by createdAt in ascending order
+      .skip((page - 1) * limit) // Skip the specified number of documents based on the current page
+      .limit(limit) // Limit the number of documents returned per page
       .exec();
+
+    // Set the total count in the response headers
+    res.setHeader('X-Total-Count', totalCount.toString());
 
     return res.json(cards);
   } catch (error) {
