@@ -19,8 +19,9 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
   try {
     const characterName = req.params.characterName;
     const tags = req.query.tags as string | undefined; // Explicitly specify the type as string | undefined
+    console.log(tags)
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
-    const limit = 2; // Number of items per page
+    const limit = 10; // Number of items per page
 
     // Construct the query object
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
