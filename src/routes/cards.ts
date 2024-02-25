@@ -18,23 +18,28 @@ cardRoutes.get('/all', async (_req: Request, res: Response) => {
 cardRoutes.get('/character/:characterName', async (req: Request, res: Response) => {
   try {
     const characterName = req.params.characterName;
-    const tags = req.query.tags as string | undefined; // Explicitly specify the type as string | undefined
-    console.log(tags)
+    const tags = req.query.tags as string | undefined;
+    const youtube = req.query.YouTube === 'true';
+    const twitch = req.query.Twitch === 'true';
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = 10; // Number of items per page
 
     // Construct the query object
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
 
-    // If tags query parameter exists and is a string, filter cards by tags
     if (typeof tags === 'string') {
       const tagsArray = tags.split(','); // Split the tags string into an array
       query['tags.name'] = { $in: tagsArray }; // Filter cards where any tag name is in the provided tags array
     }
 
-    console.log('query:', query); // Log the constructed query for debugging
+    if (youtube) {
+      query.youtubeLink = { $exists: true, $ne: '' }; 
+    }
 
-    // Fetch total number of cards
+    if (twitch) {
+      query.twitchLink = { $exists: true, $ne: '' }; 
+    }
+
     const totalCount = await CardModel.countDocuments(query).exec();
 
     // Fetch cards, apply pagination, and sort them by createdAt in ascending order
@@ -44,7 +49,6 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
       .limit(limit) // Limit the number of documents returned per page
       .exec();
 
-    // Set the total count in the response headers
     res.setHeader('X-Total-Count', totalCount.toString());
 
     return res.json(cards);
@@ -89,19 +93,36 @@ cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
   }
 });
 
-// Route to get cards by user ID
 cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = 10; // Number of items per page
 
-    const cards: ICard[] = await CardModel.find({ userId }).exec();
+    // Construct the query object to filter cards by user ID
+    const query: any = { userId };
 
+    // Fetch total number of cards based on the user ID
+    const totalCount = await CardModel.countDocuments(query).exec();
+
+    // Fetch cards, apply pagination, and sort them by createdAt in ascending order
+    const cards: ICard[] = await CardModel.find(query)
+      .sort({ createdAt: -1 })  // Sorting by createdAt in ascending order
+      .skip((page - 1) * limit) // Skip the specified number of documents based on the current page
+      .limit(limit) // Limit the number of documents returned per page
+      .exec();
+
+    // Set the total count in the response headers
+    res.setHeader('X-Total-Count', totalCount.toString());
+
+    // Return the paginated cards
     return res.json(cards);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
 
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {

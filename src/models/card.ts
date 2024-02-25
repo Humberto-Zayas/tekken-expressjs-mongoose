@@ -5,6 +5,7 @@ interface ICard extends Document {
   cardName: string;
   cardDescription: string;
   youtubeLink?: string;
+  twitchLink?: string;
   userId: string;
   username: string;
   punisherData: {
@@ -51,6 +52,7 @@ const CardSchema = new Schema<ICard>({
   characterName: { type: String, required: true },
   cardName: { type: String, required: true },
   cardDescription: { type: String, required: true },
+  twitchLink: {type: String },
   youtubeLink: {type: String },
   userId: { type: String, required: true },
   username: { type: String, required: true },
