@@ -123,7 +123,6 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
   }
 });
 
-
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {

@@ -1,4 +1,7 @@
 import { model, Schema, Document } from "mongoose";
+import { IMoveData } from '../interfaces/moveDataInterface';
+import { IFlowChartData } from "../interfaces/flowChartData";
+import { IComboData } from "../interfaces/comboData";
 
 interface ICard extends Document {
   characterName: string;
@@ -8,28 +11,9 @@ interface ICard extends Document {
   twitchLink?: string;
   userId: string;
   username: string;
-  punisherData: {
-    move: string;
-    description: string;
-    hitLevel?: string;
-    damage?: string[];
-    startUpFrame?: string;
-    blockFrame?: string;
-    hitFrame?: string;
-    counterHitFrame?: string;
-    notes?: string;
-  }[];
-  moveFlowChartData: {
-    move: string;
-    description: string;
-    hitLevel?: string;
-    damage?: string[];
-    startUpFrame?: string;
-    blockFrame?: string;
-    hitFrame?: string;
-    counterHitFrame?: string;
-    notes?: string;
-  }[];
+  punisherData: IMoveData[];
+  moveFlowChartData: IFlowChartData[];
+  comboData: IComboData[];
   ratings: {
     userId: string;
     rating: number;
@@ -56,66 +40,9 @@ const CardSchema = new Schema<ICard>({
   youtubeLink: {type: String },
   userId: { type: String, required: true },
   username: { type: String, required: true },
-  punisherData: [
-    {
-      move: {
-        type: String,
-        required: true,
-      },
-      description: {
-        type: String,
-      },
-      hitLevel: {
-        type: String,
-      },
-      damage: [{ type: String }], // Array of strings
-      startUpFrame: {
-        type: String,
-      },
-      blockFrame: {
-        type: String,
-      },
-      hitFrame: {
-        type: String,
-      },
-      counterHitFrame: {
-        type: String,
-      },
-      notes: {
-        type: String,
-      },
-    },
-  ],
-  moveFlowChartData: [
-    {
-      move: {
-        type: String,
-        required: true,
-      },
-      description: {
-        type: String,
-      },
-      hitLevel: {
-        type: String,
-      },
-      damage: [{ type: String }], // Array of strings
-      startUpFrame: {
-        type: String,
-      },
-      blockFrame: {
-        type: String,
-      },
-      hitFrame: {
-        type: String,
-      },
-      counterHitFrame: {
-        type: String,
-      },
-      notes: {
-        type: String,
-      },
-    },
-  ],
+  punisherData: [Schema.Types.Mixed],
+  moveFlowChartData: [Schema.Types.Mixed],
+  comboData: [Schema.Types.Mixed],
   ratings: [{ userId: String, rating: Number }],
   tags: [
     {
