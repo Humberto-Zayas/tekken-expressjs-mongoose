@@ -12,6 +12,7 @@ interface ICard extends Document {
   userId: string;
   username: string;
   punisherData: IMoveData[];
+  followUpData: IFlowChartData[];
   moveFlowChartData: IFlowChartData[];
   comboData: IComboData[];
   ratings: {
@@ -41,6 +42,7 @@ const CardSchema = new Schema<ICard>({
   userId: { type: String, required: true },
   username: { type: String, required: true },
   punisherData: [Schema.Types.Mixed],
+  followUpData: [Schema.Types.Mixed],
   moveFlowChartData: [Schema.Types.Mixed],
   comboData: [Schema.Types.Mixed],
   ratings: [{ userId: String, rating: Number }],
