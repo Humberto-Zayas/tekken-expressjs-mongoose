@@ -126,7 +126,7 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {
-    const { cardName, characterName, cardDescription, youtubeLink, punisherData, moveFlowChartData, userId, username, tags } = req.body;
+    const { cardName, characterName, cardDescription, youtubeLink, punisherData, comboData, moveFlowChartData, userId, username, tags } = req.body;
 
     const newCard = await CardModel.create({
       cardName,
@@ -136,6 +136,7 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
       userId, 
       username,
       punisherData,
+      comboData,
       moveFlowChartData,
       tags
     });
