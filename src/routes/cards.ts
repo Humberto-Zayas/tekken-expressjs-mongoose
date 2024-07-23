@@ -126,7 +126,7 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {
-    const { cardName, characterName, cardDescription, youtubeLink, twitchLink, punisherData, comboData, followUpData, moveFlowChartData, userId, username, tags } = req.body;
+    const { cardName, characterName, cardDescription, youtubeLink, twitchLink, punisherData, comboData, followUpData, moveFlowChartData, moveData, userId, username, tags } = req.body;
 
     const newCard = await CardModel.create({
       cardName,
@@ -140,6 +140,7 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
       comboData,
       followUpData,
       moveFlowChartData,
+      moveData,
       tags
     });
 
@@ -157,7 +158,7 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
 cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
-    const { cardName, cardDescription, youtubeLink, twitchLink, punisherData, moveFlowChartData, followUpData, comboData, userId, tags } = req.body;
+    const { cardName, cardDescription, youtubeLink, twitchLink, punisherData, moveFlowChartData, followUpData, comboData, moveData, userId, tags } = req.body;
 
     const updatedCard = await CardModel.findByIdAndUpdate(
       cardId,
@@ -170,6 +171,7 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response)
         moveFlowChartData,
         followUpData,
         comboData,
+        moveData,
         userId,
         tags,
         lastEditedAt: new Date(), // Update lastEditedAt field with current date/time
