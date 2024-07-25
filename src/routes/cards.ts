@@ -63,7 +63,6 @@ cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
     const userId = req.query.userId as string; 
-    console.log(userId)
 
     const card: ICard | null = await CardModel.findById(cardId).exec();
 
@@ -158,7 +157,12 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
 cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
-    const { cardName, cardDescription, youtubeLink, twitchLink, punisherData, moveFlowChartData, followUpData, comboData, moveData, userId, tags } = req.body;
+
+    const {
+      cardName, cardDescription, youtubeLink, twitchLink,
+      punisherData, moveFlowChartData, followUpData, comboData,
+      moveData, userId, tags
+    } = req.body;
 
     const updatedCard = await CardModel.findByIdAndUpdate(
       cardId,
@@ -185,10 +189,11 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response)
 
     return res.json(updatedCard);
   } catch (error) {
-    console.error(error);
+    console.error('Error updating the card:', error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
 
 // Route to add or update a rating for a card
 cardRoutes.post('/rate/:cardId', verifyToken, async (req: Request, res: Response) => {
@@ -229,8 +234,6 @@ cardRoutes.delete('/:cardId', verifyToken, async (req: Request, res: Response) =
   try {
     const cardId = req.params.cardId;
     const { userId } = req.body;
-
-    console.log(req.body)
 
     // Check if the card exists
     const cardToDelete = await CardModel.findById(cardId);

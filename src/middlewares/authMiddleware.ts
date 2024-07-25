@@ -1,5 +1,3 @@
-// authMiddleware.ts
-
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { IUser } from '../models/user'; 
@@ -14,6 +12,7 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.header('Authorization');
 
   if (!authHeader) {
+    console.error('Unauthorized - Missing token');
     return res.status(401).json({ error: 'Unauthorized - Missing token' });
   }
 
@@ -21,12 +20,14 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = authHeader.split(' ')[1];
 
   if (!token) {
+    console.error('Unauthorized - Invalid token format');
     return res.status(401).json({ error: 'Unauthorized - Invalid token format' });
   }
 
   try {
     const decoded: any = jwt.verify(token, secret);
-    req.user = decoded; // Attach the decoded user information to the request
+
+    req.user = decoded.data; // Attach the decoded user information to the request
 
     next();
   } catch (error) {
