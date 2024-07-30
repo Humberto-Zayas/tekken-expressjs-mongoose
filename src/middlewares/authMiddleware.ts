@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/user'; 
+import { IUser } from '../models/user';
 
 const secret = process.env.JWT_SECRET || 'your_default_secret';
 
 interface AuthRequest extends Request {
-  user?: IUser; 
+  user?: IUser;
 }
 
 const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { UserModel, IUser } from "../models/user";
-import { signToken } from "../utils/auth";
+import { signToken, verifyRefreshToken, signRefreshToken } from "../utils/auth";
 import mongoose, { Types } from 'mongoose'; // Import mongoose and Types
 
 const userRoutes = Router();
@@ -56,7 +56,7 @@ userRoutes.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user: IUser | null = await UserModel.findOne({ email }).exec();
+    const user = await UserModel.findOne({ email }).exec();
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -73,7 +73,7 @@ userRoutes.post("/login", async (req, res) => {
       ? user.bookmarks.map((id) => id.toString())
       : [];
 
-    // Sign a token on successful login
+    // Sign tokens on successful login
     const token = signToken({
       username: user.username,
       email: user.email,
@@ -81,10 +81,33 @@ userRoutes.post("/login", async (req, res) => {
       bookmarkedCardIds,
     });
 
-    return res.json({ token, username: user.username, userId: user._id });
+    const refreshToken = signToken({
+      username: user.username,
+      email: user.email,
+      _id: user._id,
+      bookmarkedCardIds,
+    }, { expiresIn: '7d' }); // Set appropriate expiration for refresh token
+
+    return res.json({ token, refreshToken, username: user.username, userId: user._id });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Sorry, something went wrong :/" });
+  }
+});
+
+userRoutes.post('/refresh-token', (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token is required' });
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    const newToken = signToken(decoded.data);
+    res.json({ token: newToken });
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid refresh token' });
   }
 });
 
