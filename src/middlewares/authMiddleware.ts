@@ -10,6 +10,7 @@ interface AuthRequest extends Request {
 
 const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.header('Authorization');
+  console.log('Authorization Header:', authHeader);
 
   if (!authHeader) {
     console.error('Unauthorized - Missing token');
@@ -17,21 +18,28 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 
   // Extract the token from the Authorization header
-  const token = authHeader.split(' ')[1];
-
-  if (!token) {
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
     console.error('Unauthorized - Invalid token format');
     return res.status(401).json({ error: 'Unauthorized - Invalid token format' });
   }
 
+  const token = parts[1];
+  console.log('Extracted Token:', token);
+
+  if (!token) {
+    console.error('Unauthorized - Token is empty');
+    return res.status(401).json({ error: 'Unauthorized - Token is empty' });
+  }
+
   try {
     const decoded: any = jwt.verify(token, secret);
+    console.log('Token verification successful. Decoded token data:', decoded);
 
     req.user = decoded.data; // Attach the decoded user information to the request
-
     next();
   } catch (error) {
-    console.error('Token verification error:', error);
+    console.error({ error: 'Token verification error'});
     return res.status(401).json({ error: 'Unauthorized - Invalid token' });
   }
 };
