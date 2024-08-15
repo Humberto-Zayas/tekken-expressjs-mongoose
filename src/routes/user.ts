@@ -178,20 +178,12 @@ userRoutes.delete('/:userId/unbookmark/:cardId', async (req, res) => {
 userRoutes.get('/:userId/bookmarks', async (req, res) => {
   try {
     const userId = req.params.userId;
-    const characterName = req.query.characterName as string; // Explicitly cast characterName to string
-
-    let query: { userId: string; characterName?: string }; // Define query type
-
-    if (characterName) {
-      query = { userId, characterName }; // If characterName is provided, add it to the query
-    } else {
-      query = { userId }; // Default query to find bookmarks by user ID
-    }
+    const characterName = req.query.characterName;
 
     const user = await UserModel.findById(userId)
       .populate({
         path: 'bookmarks',
-        match: query, // Apply the query to filter bookmarks by character name if provided
+        match: characterName ? { characterName } : {}, // Ensure query correctly matches
         options: { sort: { createdAt: -1 } }
       })
       .exec();
@@ -200,11 +192,15 @@ userRoutes.get('/:userId/bookmarks', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Log user bookmarks to verify
+    console.log('User bookmarks:', user.bookmarks);
+
     return res.json({ bookmarks: user.bookmarks });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
 
 export default userRoutes;
