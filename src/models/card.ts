@@ -23,23 +23,22 @@ interface ICard extends Document {
   tags: {
     name: string;
     reactions: {
-      userId: string; // Consider changing to mongoose.Schema.Types.ObjectId if applicable
+      userId: string;
       type: 'like' | 'dislike';
     }[];
   }[];
   createdAt: Date;
   lastEditedAt: Date | null;
 
-  // Method to toggle like/dislike for a tag by a user
-  toggleTagReaction(userId: string, tagName: string, reactionType: 'like' | 'dislike'): void;
+  getAverageRating(): number;
 }
 
 const CardSchema = new Schema<ICard>({
   characterName: { type: String, required: true },
   cardName: { type: String, required: true },
   cardDescription: { type: String, required: true },
-  twitchLink: {type: String },
-  youtubeLink: {type: String },
+  twitchLink: { type: String },
+  youtubeLink: { type: String },
   userId: { type: String, required: true },
   username: { type: String, required: true },
   punisherData: [Schema.Types.Mixed],
@@ -72,31 +71,17 @@ const CardSchema = new Schema<ICard>({
   lastEditedAt: Date,
 });
 
-// Method to toggle like/dislike for a tag by a user
-CardSchema.methods.toggleTagReaction = function (
-  this: ICard,
-  userId: string,
-  tagName: string,
-  reactionType: 'like' | 'dislike'
-) {
-  const tagIndex = this.tags.findIndex(tag => tag.name === tagName);
-  if (tagIndex !== -1) {
-    const userReactionIndex = this.tags[tagIndex].reactions.findIndex(
-      reaction => reaction.userId === userId
-    );
-    if (userReactionIndex !== -1) {
-      // If user already reacted, toggle reaction
-      if (this.tags[tagIndex].reactions[userReactionIndex].type === reactionType) {
-        this.tags[tagIndex].reactions.splice(userReactionIndex, 1); // Remove reaction
-      } else {
-        this.tags[tagIndex].reactions[userReactionIndex].type = reactionType; // Toggle reaction
-      }
-    } else {
-      // If user hasn't reacted yet, add new reaction
-      this.tags[tagIndex].reactions.push({ userId, type: reactionType });
-    }
-  }
+// Method to calculate average rating
+CardSchema.methods.getAverageRating = function (): number {
+  if (this.ratings.length === 0) return 0;
+  
+  const total = this.ratings.reduce((sum: number, ratingObj: { userId: string; rating: number }) => {
+    return sum + ratingObj.rating;
+  }, 0);
+  
+  return total / this.ratings.length;
 };
+
 
 const CardModel = model<ICard>("Card", CardSchema);
 

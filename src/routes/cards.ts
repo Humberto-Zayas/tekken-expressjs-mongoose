@@ -62,35 +62,32 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
 cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
   try {
     const cardId = req.params.cardId;
-    const userId = req.query.userId as string; 
 
+    // Find the card by ID
     const card: ICard | null = await CardModel.findById(cardId).exec();
 
     if (!card) {
       return res.status(404).json({ error: 'Card not found' });
     }
 
-    // Check if the user has liked or disliked any tags associated with the card
-    const userReactions = card.tags.map((tag: { name: string; reactions: any[] }) => {
-      // Use toggleTagReaction method on the schema level
-      const cardSchema = CardModel.schema as any; // Cast to any to avoid TypeScript errors
-      const tagReaction = cardSchema.methods.toggleTagReaction.call(card, userId, tag.name);
-      return {
-        tag: tag.name,
-        liked: tagReaction === 'like',
-        disliked: tagReaction === 'dislike',
-      };
-    });
+    // Calculate the average rating for the card
+    const averageRating = card.ratings.length > 0 
+      ? card.ratings.reduce((total, ratingObj) => total + ratingObj.rating, 0) / card.ratings.length 
+      : 0;
 
-    // Include user reactions in the response
-    const cardWithReactions = { ...card.toObject(), userReactions };
+    // Return the card data with the average rating included
+    const cardWithAverageRating = {
+      ...card.toObject(),
+      averageRating,
+    };
 
-    return res.json(cardWithReactions);
+    return res.json(cardWithAverageRating);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
 
 cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
   try {
