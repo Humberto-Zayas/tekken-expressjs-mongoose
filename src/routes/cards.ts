@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { CardModel, ICard } from '../models/card';
+import { UserModel, IUser } from '../models/user';
 import verifyToken from '../middlewares/authMiddleware'; // Adjust the path as per your project structure
 
 
@@ -91,14 +92,15 @@ cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
 
 cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
   try {
-    const userId = req.params.userId;
+    const creatorId = req.params.userId; // The creator of the cards
+    const actualUserId = req.query.userId as string; // The logged-in user's ID passed in the query
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = 10; // Number of items per page
 
-    // Construct the query object to filter cards by user ID
-    const query: any = { userId };
+    // Construct the query object to filter cards by creator ID
+    const query: any = { userId: creatorId };
 
-    // Fetch total number of cards based on the user ID
+    // Fetch total number of cards based on the creator ID
     const totalCount = await CardModel.countDocuments(query).exec();
 
     // Fetch cards, apply pagination, and sort them by createdAt in ascending order
@@ -108,16 +110,32 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
       .limit(limit) // Limit the number of documents returned per page
       .exec();
 
+    // Fetch the user's bookmarks if an actual userId is provided
+    let bookmarkedCardIds: string[] = [];
+    if (actualUserId) {
+      const user = await UserModel.findById(actualUserId).select('bookmarks').exec();
+      if (user && user.bookmarks) {
+        bookmarkedCardIds = user.bookmarks.map((bookmark) => bookmark.toString());
+      }
+    }
+
+    // Attach a `isBookmarked` field to each card based on whether the actual user has bookmarked it
+    const cardsWithBookmarkStatus = cards.map((card) => ({
+      ...card.toObject(),
+      isBookmarked: bookmarkedCardIds.includes(card._id.toString()),
+    }));
+
     // Set the total count in the response headers
     res.setHeader('X-Total-Count', totalCount.toString());
 
-    // Return the paginated cards
-    return res.json(cards);
+    // Return the paginated cards with the bookmark status
+    return res.json(cardsWithBookmarkStatus);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
 
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
