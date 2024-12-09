@@ -18,15 +18,14 @@ const refreshExpiration = "7d"; // adjust the refresh token expiration time as n
 //   return jwt.sign({ data }, secret, { expiresIn: expiration, ...options });
 // };
 
-const signToken = (data: TokenData, options ={}) => {
+const signToken = (data: TokenData, options = {}) => {
   const secret = process.env.JWT_SECRET || 'your_default_secret';
-  const expiration = '1h'; // or '7d' for refresh tokens
 
-  return jwt.sign({ data }, secret, { expiresIn: expiration });
+  return jwt.sign({ data }, secret, options);
 };
 
 const signRefreshToken = (data: TokenData): string => {
-  return jwt.sign({ data }, refreshTokenSecret, { expiresIn: refreshExpiration });
+  return jwt.sign({ data }, refreshTokenSecret); // No expiration for refresh tokens
 };
 
 const verifyRefreshToken = (token: string): any => {

@@ -24,6 +24,7 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     const twitch = req.query.Twitch === 'true';
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = 10; // Number of items per page
+    const userId = req.query.userId as string | undefined; // Assuming userId is passed in the query params
 
     // Construct the query object
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
@@ -34,11 +35,11 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     }
 
     if (youtube) {
-      query.youtubeLink = { $exists: true, $ne: '' }; 
+      query.youtubeLink = { $exists: true, $ne: '' };
     }
 
     if (twitch) {
-      query.twitchLink = { $exists: true, $ne: '' }; 
+      query.twitchLink = { $exists: true, $ne: '' };
     }
 
     const totalCount = await CardModel.countDocuments(query).exec();
@@ -50,9 +51,27 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
       .limit(limit) // Limit the number of documents returned per page
       .exec();
 
+    // If userId is provided, check for bookmarked cards
+    let bookmarkedCardIds: string[] = [];
+    if (userId) {
+      const user = await UserModel.findById(userId)
+        .populate('bookmarks', '_id') // Only get the IDs of bookmarked cards
+        .exec();
+
+      if (user && user.bookmarks) {
+        bookmarkedCardIds = user.bookmarks.map((bookmark: any) => bookmark._id.toString());
+      }
+    }
+
+    // Add a "bookmarked" field to each card if it is in the user's bookmarks
+    const cardsWithBookmarks = cards.map(card => ({
+      ...card.toObject(),
+      bookmarked: bookmarkedCardIds.includes(card._id.toString()),
+    }));
+
     res.setHeader('X-Total-Count', totalCount.toString());
 
-    return res.json(cards);
+    return res.json(cardsWithBookmarks);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
@@ -88,8 +107,7 @@ cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
-
-
+ 
 cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
   try {
     const creatorId = req.params.userId; // The creator of the cards
@@ -122,7 +140,7 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
     // Attach a `isBookmarked` field to each card based on whether the actual user has bookmarked it
     const cardsWithBookmarkStatus = cards.map((card) => ({
       ...card.toObject(),
-      isBookmarked: bookmarkedCardIds.includes(card._id.toString()),
+      bookmarked: bookmarkedCardIds.includes(card._id.toString()),
     }));
 
     // Set the total count in the response headers
@@ -135,7 +153,6 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
-
 
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
@@ -209,7 +226,6 @@ cardRoutes.put('/edit/:cardId', verifyToken, async (req: Request, res: Response)
   }
 });
 
-
 // Route to add or update a rating for a card
 cardRoutes.post('/rate/:cardId', verifyToken, async (req: Request, res: Response) => {
   try {
@@ -271,6 +287,5 @@ cardRoutes.delete('/:cardId', verifyToken, async (req: Request, res: Response) =
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
-
-
+ 
 export default cardRoutes;

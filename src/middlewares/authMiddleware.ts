@@ -10,7 +10,6 @@ interface AuthRequest extends Request {
 
 const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.header('Authorization');
-  console.log('Authorization Header:', authHeader);
 
   if (!authHeader) {
     console.error('Unauthorized - Missing token');
@@ -25,7 +24,6 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 
   const token = parts[1];
-  console.log('Extracted Token:', token);
 
   if (!token) {
     console.error('Unauthorized - Token is empty');
@@ -34,7 +32,6 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
 
   try {
     const decoded: any = jwt.verify(token, secret);
-    console.log('Token verification successful. Decoded token data:', decoded);
 
     req.user = decoded.data; // Attach the decoded user information to the request
     next();

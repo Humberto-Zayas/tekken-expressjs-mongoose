@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { UserModel, IUser } from "../models/user";
+import { CardModel, ICard } from "../models/card";
 import { signToken, verifyRefreshToken, signRefreshToken } from "../utils/auth";
 import mongoose, { Types } from 'mongoose'; // Import mongoose and Types
 
@@ -23,17 +24,23 @@ userRoutes.get("/:userId", async (req, res) => {
   }
 });
 
-// Route for user signup
 userRoutes.post("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    const userExists = await UserModel.findOne({ email }).exec();
-
-    if (userExists) {
+    // Check if a user with the provided email already exists
+    const emailExists = await UserModel.findOne({ email }).exec();
+    if (emailExists) {
       return res.status(409).json({ error: "User with this email already exists" });
     }
 
+    // Check if a user with the provided username already exists
+    const usernameExists = await UserModel.findOne({ username }).exec();
+    if (usernameExists) {
+      return res.status(409).json({ error: "Username is already taken" });
+    }
+
+    // If neither exists, create a new user
     const newUser = await UserModel.create({
       username,
       email,
@@ -50,6 +57,7 @@ userRoutes.post("/signup", async (req, res) => {
     return res.status(500).json({ error: "Sorry, something went wrong :/" });
   }
 });
+
 
 // Route for user login
 userRoutes.post("/login", async (req, res) => {
@@ -180,27 +188,31 @@ userRoutes.get('/:userId/bookmarks', async (req, res) => {
     const userId = req.params.userId;
     const characterName = req.query.characterName;
 
-    const user = await UserModel.findById(userId)
-      .populate({
-        path: 'bookmarks',
-        match: characterName ? { characterName } : {}, // Ensure query correctly matches
-        options: { sort: { createdAt: -1 } }
-      })
-      .exec();
-
+    // Fetch the user with only the bookmarks' ObjectIds
+    const user = await UserModel.findById(userId).exec();
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Log user bookmarks to verify
-    console.log('User bookmarks:', user.bookmarks);
+    // Populate the bookmarks manually using CardModel
+    const populatedBookmarks = await CardModel.find({
+      _id: { $in: user.bookmarks },
+      ...(characterName && { characterName }), // Apply character name filter if provided
+    }).exec();
 
-    return res.json({ bookmarks: user.bookmarks });
+    const bookmarksWithProperty = populatedBookmarks.map((bookmark) => ({
+      ...bookmark.toObject(),
+      bookmarked: true,
+    }));
+
+    return res.json({ bookmarks: bookmarksWithProperty });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
+
+
 
 
 export default userRoutes;
