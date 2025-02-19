@@ -58,7 +58,6 @@ userRoutes.post("/signup", async (req, res) => {
   }
 });
 
-
 // Route for user login
 userRoutes.post("/login", async (req, res) => {
   try {
@@ -211,8 +210,6 @@ userRoutes.get('/:userId/bookmarks', async (req, res) => {
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
-
-
 
 
 export default userRoutes;
