@@ -25,29 +25,26 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = 10;
     const userId = req.query.userId as string | undefined;
+    const sortOrder = req.query.sortOrder === 'ascending' ? 1 : -1; // Determine sort order
 
-    // Construct query object for cards
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
 
     if (tags) {
-      query['tags.name'] = { $in: tags.split(',') }; // Convert tags to an array
+      query['tags.name'] = { $in: tags.split(',') };
     }
-
     if (youtube) query.youtubeLink = { $exists: true, $ne: '' };
     if (twitch) query.twitchLink = { $exists: true, $ne: '' };
 
     const totalCount = await CardModel.countDocuments(query).exec();
 
-    // Fetch paginated and sorted cards
+    // Fetch cards sorted correctly from the DB
     const cards = await CardModel.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: sortOrder }) // Apply sorting dynamically
       .skip((page - 1) * limit)
       .limit(limit)
       .exec();
 
     let bookmarkedCardIds: string[] = [];
-
-    // Fetch user bookmarks if userId exists
     if (userId) {
       const user = await UserModel.findById(userId, 'bookmarks').exec();
       if (user?.bookmarks) {
@@ -55,7 +52,6 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
       }
     }
 
-    // Add a "bookmarked" field to each card
     const cardsWithBookmarks = cards.map(card => ({
       ...card.toObject(),
       bookmarked: bookmarkedCardIds.includes(card._id.toString()),
@@ -68,7 +64,6 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     return res.status(500).json({ error: 'Sorry, something went wrong :/' });
   }
 });
-
 
 // Route to get a card by ID
 cardRoutes.get('/id/:cardId', async (req: Request, res: Response) => {
