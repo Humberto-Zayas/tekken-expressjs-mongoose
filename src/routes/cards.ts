@@ -25,7 +25,8 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = 10;
     const userId = req.query.userId as string | undefined;
-    const sortOrder = req.query.sortOrder === 'ascending' ? 1 : -1; // Determine sort order
+    const sortOrder = req.query.sortOrder === 'ascending' ? 1 : -1; // Determine sorting order
+    const ratingSortOrder = req.query.ratingSortOrder === 'ascending' ? 1 : (req.query.ratingSortOrder === 'descending' ? -1 : null);
 
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
 
@@ -37,12 +38,24 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
 
     const totalCount = await CardModel.countDocuments(query).exec();
 
+    // Define sort object dynamically
+    let sortCriteria: any = { createdAt: sortOrder }; // Default sorting by creation date
+    if (ratingSortOrder !== null) {
+      sortCriteria = { averageRating: ratingSortOrder }; // Override with rating sorting if provided
+    }
+
     // Fetch cards sorted correctly from the DB
-    const cards = await CardModel.find(query)
-      .sort({ createdAt: sortOrder }) // Apply sorting dynamically
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .exec();
+    const cards = await CardModel.aggregate([
+      { $match: query },
+      {
+        $addFields: {
+          averageRating: { $ifNull: [{ $avg: "$ratings.rating" }, 0] } // Calculate average rating
+        }
+      },
+      { $sort: sortCriteria },
+      { $skip: (page - 1) * limit },
+      { $limit: limit }
+    ]);
 
     let bookmarkedCardIds: string[] = [];
     if (userId) {
@@ -53,7 +66,7 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     }
 
     const cardsWithBookmarks = cards.map(card => ({
-      ...card.toObject(),
+      ...card,
       bookmarked: bookmarkedCardIds.includes(card._id.toString()),
     }));
 
