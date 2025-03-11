@@ -27,6 +27,9 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     const userId = req.query.userId as string | undefined;
     const sortOrder = req.query.sortOrder === 'ascending' ? 1 : -1;
     const ratingSortOrder = req.query.ratingSortOrder === 'ascending' ? 1 : (req.query.ratingSortOrder === 'descending' ? -1 : null);
+    
+    const patchVersionParam = req.query.patchVersion as string | undefined;
+    const patchVersions = patchVersionParam ? patchVersionParam.split(',') : [];
 
     const query: any = { characterName: { $regex: new RegExp(characterName, 'i') } };
 
@@ -35,6 +38,10 @@ cardRoutes.get('/character/:characterName', async (req: Request, res: Response) 
     }
     if (youtube) query.youtubeLink = { $exists: true, $ne: '' };
     if (twitch) query.twitchLink = { $exists: true, $ne: '' };
+
+    if (patchVersions.length > 0) {
+      query.patchVersion = { $in: patchVersions };
+    }
 
     const totalCount = await CardModel.countDocuments(query).exec();
 
@@ -168,7 +175,7 @@ cardRoutes.get('/user/:userId', async (req: Request, res: Response) => {
 // Route to create a new card
 cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
   try {
-    const { cardName, characterName, cardDescription, youtubeLink, twitchLink, punisherData, comboData, followUpData, moveFlowChartData, moveData, userId, username, tags } = req.body;
+    const { cardName, characterName, cardDescription, youtubeLink, twitchLink, punisherData, comboData, followUpData, moveFlowChartData, moveData, userId, username, tags, patchVersion } = req.body;
 
     const newCard = await CardModel.create({
       cardName,
@@ -183,7 +190,8 @@ cardRoutes.post('/create', verifyToken, async (req: Request, res: Response) => {
       followUpData,
       moveFlowChartData,
       moveData,
-      tags
+      tags,
+      patchVersion
     });
 
     return res.status(201).json(newCard);

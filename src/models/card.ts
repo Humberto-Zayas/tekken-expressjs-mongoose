@@ -27,6 +27,7 @@ interface ICard extends Document {
       type: 'like' | 'dislike';
     }[];
   }[];
+  patchVersion: string[]; 
   createdAt: Date;
   lastEditedAt: Date | null;
 
@@ -67,6 +68,7 @@ const CardSchema = new Schema<ICard>({
       ],
     },
   ],
+  patchVersion: { type: [String], required: true },
   createdAt: { type: Date, default: Date.now },
   lastEditedAt: Date,
 });
